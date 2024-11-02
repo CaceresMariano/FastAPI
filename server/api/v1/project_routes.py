@@ -1,6 +1,8 @@
-from typing import Annotated
+from typing import Annotated, List
 
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, Path, Query
+
+from server.schemas.project_schema import NewProjectRequest, ProjectResponse, ProjectRequest
 
 router = APIRouter(prefix='/projects')
 
@@ -12,8 +14,8 @@ router = APIRouter(prefix='/projects')
         200: {'description': 'Retorna un listado de proyectos'},
     },
     description='Esta ruta retorna todo el listado de los proyectos, si no tienen nada retorna una lista vacia'
-)  # Get /projects
-async def get_list() -> list:
+)  # Get /projects -> Calculo del offset es n*limit
+async def get_list(limit: Annotated[int, Query(ge=1, le=1000)] = 10, offset: Annotated[int, Query(ge=0)] = 0) -> List[ProjectResponse]:
     return []
 
 
@@ -26,7 +28,7 @@ async def get_list() -> list:
     },
     description='Retorna un proyecto por ID. Falla si el ID no existe'
 )  # GET /projects/{id}
-async def get_by_id(id: Annotated[int, Path(ge=1)]) -> dict:
+async def get_by_id(id: Annotated[int, Path(ge=1)]) -> ProjectResponse:
     return {'id': id}
 
 
@@ -38,8 +40,8 @@ async def get_by_id(id: Annotated[int, Path(ge=1)]) -> dict:
     },
     description='Crea un proyecto nuevo con los campos pasados por Body Params. Falla si faltan alguno de los campos obligatorios'
 )  # POST /projects
-async def create() -> dict:
-    return {}
+async def create(new_project: NewProjectRequest) -> ProjectResponse:
+    return new_project
 
 
 @router.patch(
@@ -51,8 +53,8 @@ async def create() -> dict:
     },
     description='Actualiza un proyecto con los campos pasados por Body Param. ID no es un entero valido'
 )  # PATCH /projects/{id}
-async def get_by_id(id: Annotated[int, Path(ge=1)]) -> dict:
-    return {'id': id}
+async def get_by_id(id: Annotated[int, Path(ge=1)], project: ProjectRequest) -> ProjectResponse:
+    return project
 
 
 @router.delete(
